@@ -2,3 +2,6 @@
 /db
 /google-drive-credentials
 /vendor
+.DS_Store
+composer.json
+composer.lock
