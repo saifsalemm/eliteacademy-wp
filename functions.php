@@ -4,7 +4,7 @@ include get_stylesheet_directory() . '/utils/gen-rand-4-digit-number.php';
 include get_stylesheet_directory() . '/utils/authenticate-user.php';
 // include get_stylesheet_directory() . '/utils/get-user.php';
 // include get_stylesheet_directory() . '/utils/get-portal.php';
-// include get_stylesheet_directory() . '/utils/get-lesson.php';
+include get_stylesheet_directory() . '/utils/get-lesson.php';
 include get_stylesheet_directory() . '/utils/custom_product_category_fields-teacher-meta-data.php';
 include get_stylesheet_directory() . '/utils/tutor-earnings-page.php';
 // Add more includes as needed
