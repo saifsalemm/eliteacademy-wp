@@ -103,6 +103,20 @@ function get_lesson_and_student_data_refactored($request)
         // set_transient('lesson_' . $product_id, $lesson, 3600 * 24);
         // }
 
+        // get hw progress if found
+        $hw_result = null;
+        $homework_id = $lesson_meta['hw_id'][0];
+        if ($homework_id) {
+            $homework_results = get_user_meta($user_id, 'homework_results', false);
+            foreach ($homework_results as $res) {
+                $result = explode('-', $res);
+                if ($result[0] === $homework_id) {
+                    $hw_result = get_post_meta($result[1], 'raw_data', true);
+                }
+            }
+        }
+
+        $lesson["hw_result"] = $hw_result;
         $lesson["expiry_date"] = $lesson_meta['allowed_time'][0] == 0 ? -1 : intval(get_user_meta($user_id, $product_id . '_expiry_date', true));
         $lesson["remaining_views"] = $lesson_meta['allowed_views'][0] == 0 ? -1 : intval(get_user_meta($user_id, $product_id . '_remaining_views', true));
         $lesson["past_quiz_trials"] = fetch_grades_by_quiz_and_student($lesson_meta['quiz_id'][0], $user_id);
