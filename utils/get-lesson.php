@@ -131,20 +131,28 @@ function get_lesson_and_student_data_refactored($request)
     // if ($lesson) {
     $lesson_meta = get_post_meta($product_id);
     $pre_type = get_post_meta($product_id, 'prerequisite_type', true);
+    $finished_prerequisites = false;
 
     if ($pre_type === 'quiz') {
-        $pre_hw_id = get_post_meta(get_post_meta($product_id, 'prerequisite', true), 'quiz_id', true);
-        $raw_data = get_grade_by_author_and_quiz_id($pre_hw_id);
-    } else {
-        $pre_hw_id = get_post_meta(get_post_meta($product_id, 'prerequisite', true), 'hw_id', true);
-        $homework_results = get_user_meta($user_id, 'homework_results', false);
-        $raw_data = null;
-        foreach ($homework_results as $res) {
-            $result = explode('-', $res);
-            if ($result[0] === $pre_hw_id) {
-                $raw_data = get_post_meta($result[1], 'raw_data', true);
+        $pre_quiz_id = get_post_meta(get_post_meta($product_id, 'prerequisite', true), 'quiz_id', true);
+        $user_past_quiz_trials = get_user_meta($user_id, 'quizzes_results', false);
+        foreach ($user_past_quiz_trials as $res) {
+            $id_location = strpos($res, $pre_quiz_id);
+            if ($id_location !== false && $id_location !== -1) {
+                $finished_prerequisites = true;
             }
         }
+    } else if ($pre_type === 'hw') {
+        $pre_hw_id = get_post_meta(get_post_meta($product_id, 'prerequisite', true), 'hw_id', true);
+        $user_past_hw_trials = get_user_meta($user_id, 'homework_results', false);
+        foreach ($user_past_hw_trials as $res) {
+            $id_location = strpos($res, $pre_hw_id);
+            if ($id_location !== false && $id_location !== -1) {
+                $finished_prerequisites = true;
+            }
+        }
+    } else {
+        $finished_prerequisites = true;
     }
 
     $lesson = array(
@@ -158,8 +166,9 @@ function get_lesson_and_student_data_refactored($request)
         "vodafone_cash" => $lesson_meta['payment_method_vodafone_cash'][0] === "yes" ? true : false,
         "last_purchase_date" => $lesson_meta['last_purchase_date'][0],
         "pre" => $lesson_meta['prerequisite'][0] == '' || !$pre_hw_id || !$lesson_meta['prerequisite'][0] ? false : intval($lesson_meta['prerequisite'][0]),
-        "hw_raw_data" => $raw_data,
-        "is_purchased" => $is_purchased
+        // "hw_raw_data" => $raw_data,
+        "is_purchased" => $is_purchased,
+        "finished_prerequisites" => $finished_prerequisites
     );
 
     // set_transient('lesson_' . $product_id, $lesson, 3600 * 24);
