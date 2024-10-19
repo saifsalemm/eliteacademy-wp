@@ -259,7 +259,7 @@ function fetch_grades_by_quiz_and_student($quiz_id, $student_id)
 
 function get_student_assessment_results($student_id, $assessment_id, $type, $single = false)
 {
-    $type_id = $type == 'grades' ? 'quiz_id' : 'hw_id';
+    $type_id = $type == 'grades' ? 'quiz_id' : 'homework_id';
     $args = array(
         'post_type' => $type,
         'post_status' => 'publish',
