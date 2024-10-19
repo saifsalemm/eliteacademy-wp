@@ -106,18 +106,17 @@ function get_lesson_and_student_data_refactored($request)
         // get hw progress if found
         $hw_result = null;
         $homework_id = $lesson_meta['hw_id'][0];
-        // $hw_result = get_student_assessment_results($user_id, $homework_id, 'hwgrades', true);
+        $hw_result = get_student_assessment_results($user_id, $homework_id, 'hwgrades', true);
 
-        if ($homework_id) {
-            $homework_results = get_user_meta($user_id, 'homework_results', false);
-            foreach ($homework_results as $res) {
-                $result = explode('-', $res);
-                if ($result[0] == $homework_id) {
-                    // $hw_result = get_post_meta($result[1], 'raw_data', true);
-                    $hw_result = $result[1];
-                }
-            }
-        }
+        // if ($homework_id) {
+        //     $homework_results = get_user_meta($user_id, 'homework_results', false);
+        //     foreach ($homework_results as $res) {
+        //         $result = explode('-', $res);
+        //         if ($result[0] == $homework_id) {
+        //             $hw_result = get_post_meta($result[1], 'raw_data', true);
+        //         }
+        //     }
+        // }
 
         $lesson["hw_result"] = $hw_result;
         $lesson["expiry_date"] = $lesson_meta['allowed_time'][0] == 0 ? -1 : intval(get_user_meta($user_id, $product_id . '_expiry_date', true));
