@@ -105,8 +105,7 @@ function get_lesson_and_student_data_refactored($request)
 
         // get hw progress if found
         $homework_id = $lesson_meta['hw_id'][0];
-        $homework_results = $lesson_meta['homework_results'];
-        $hw_result = get_student_assessment_results($homework_results, $homework_id, true);
+        $hw_result = get_student_assessment_results($user_id, $homework_id, 'hwgrades', true);
 
         // if ($homework_id) {
         //     $homework_results = get_user_meta($user_id, 'homework_results', false);
@@ -258,17 +257,45 @@ function fetch_grades_by_quiz_and_student($quiz_id, $student_id)
     }
 }
 
-function get_student_assessment_results($records, $assessment_id, $single)
+function get_student_assessment_results($student_id, $assessment_id, $type, $single = false)
 {
-    $results = [];
-    foreach ($records as $res) {
-        $quiz_and_res = explode($res, '-');
-        if ($quiz_and_res[0] == $assessment_id) {
-            $results[] = get_post_meta($quiz_and_res[1], 'raw_data', true);
+    $type_id = $type == 'grades' ? 'quiz_id' : 'hw_id';
+    $args = array(
+        'post_type' => $type,
+        'post_status' => 'publish',
+        'meta_query' => array(
+            'relation' => 'AND',
+            array(
+                'key' => $type_id,
+                'value' => $assessment_id,
+                'compare' => '=',
+            ),
+            array(
+                'key' => 'student_id',
+                'value' => $student_id,
+                'compare' => '=',
+            ),
+        ),
+    );
+
+    $query = new WP_Query($args);
+
+    if ($query->have_posts()) {
+        $grades_data = array();
+        while ($query->have_posts()) {
+            $query->the_post();
+            $post_id = get_the_ID();
+            $grade = get_post_meta($post_id);
+            $grades_data[] = $grade;
         }
-    }
-    if (count($results) < 1) {
+        wp_reset_postdata();
+
+        if ($single) {
+            return $grades_data[0]['raw_data'][0];
+        }
+
+        return $grades_data;
+    } else {
         return null;
     }
-    return $single ? $results[0] : $results;
 }
