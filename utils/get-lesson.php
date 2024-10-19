@@ -104,10 +104,10 @@ function get_lesson_and_student_data_refactored($request)
         // }
 
         $quiz_id = $lesson_meta['quiz_id'][0];
-        $quiz_results = get_student_assessment_result($user_id, $quiz_id, 'grade');
-        
+        $quiz_results = get_user_assessment_result($user_id, $quiz_id, 'grade');
+
         $homework_id = $lesson_meta['hw_id'][0];
-        $hw_result = get_student_assessment_result($user_id, $homework_id, 'hwgrade');
+        $hw_result = get_user_assessment_result($user_id, $homework_id, 'hwgrade');
 
         $lesson["hw_result"] = $hw_result;
         $lesson["past_quiz_trials"] = $quiz_results;
@@ -160,7 +160,7 @@ function get_lesson_and_student_data_refactored($request)
         "vodafone_cash" => $lesson_meta['payment_method_vodafone_cash'][0] === "yes" ? true : false,
         "last_purchase_date" => $lesson_meta['last_purchase_date'][0],
         "pre" => $lesson_meta['prerequisite'][0] == '' || !$pre_hw_id || !$lesson_meta['prerequisite'][0] ? false : intval($lesson_meta['prerequisite'][0]),
-        "hw_raw_data" => get_student_assessment_result($user_id, get_post_meta($product_id, 'hw_id', true), 'hwgrade'),
+        "hw_raw_data" => get_user_assessment_result($user_id, get_post_meta($product_id, 'hw_id', true), 'hwgrade'),
         "is_purchased" => $is_purchased,
         "finished_prerequisites" => $finished_prerequisites
     );
@@ -250,7 +250,7 @@ function fetch_grades_by_quiz_and_student($quiz_id, $student_id)
     }
 }
 
-function get_student_assessment_result($uid, $assessment_id, $type,)
+function get_user_assessment_result($uid, $assessment_id, $type,)
 {
     $data = [];
     $args = array(
