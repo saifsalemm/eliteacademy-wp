@@ -113,7 +113,8 @@ function get_lesson_and_student_data_refactored($request)
             foreach ($homework_results as $res) {
                 $result = explode('-', $res);
                 if ($result[0] == $homework_id) {
-                    $hw_result = get_post_meta($result[1], 'raw_data', true);
+                    // $hw_result = get_post_meta($result[1], 'raw_data', true);
+                    $hw_result = $result[1];
                 }
             }
         }
