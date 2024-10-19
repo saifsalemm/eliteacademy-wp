@@ -103,17 +103,23 @@ function get_lesson_and_student_data_refactored($request)
         // set_transient('lesson_' . $product_id, $lesson, 3600 * 24);
         // }
 
-        $quiz_id = $lesson_meta['quiz_id'][0];
-        $quiz_results = get_user_assessment_result($user_id, $quiz_id, 'grade');
-
+        // get hw progress if found
+        $hw_result = null;
         $homework_id = $lesson_meta['hw_id'][0];
-        $hw_result = get_user_assessment_result($user_id, $homework_id, 'hwgrade');
+        if ($homework_id) {
+            $homework_results = get_user_meta($user_id, 'homework_results', false);
+            foreach ($homework_results as $res) {
+                $result = explode('-', $res);
+                if ($result[0] === $homework_id) {
+                    $hw_result = get_post_meta($result[1], 'raw_data', true);
+                }
+            }
+        }
 
         $lesson["hw_result"] = $hw_result;
-        $lesson["past_quiz_trials"] = $quiz_results;
-        // $lesson["past_quiz_trials"] = fetch_grades_by_quiz_and_student($lesson_meta['quiz_id'][0], $user_id);
         $lesson["expiry_date"] = $lesson_meta['allowed_time'][0] == 0 ? -1 : intval(get_user_meta($user_id, $product_id . '_expiry_date', true));
         $lesson["remaining_views"] = $lesson_meta['allowed_views'][0] == 0 ? -1 : intval(get_user_meta($user_id, $product_id . '_remaining_views', true));
+        $lesson["past_quiz_trials"] = fetch_grades_by_quiz_and_student($lesson_meta['quiz_id'][0], $user_id);
         $lesson["xvast_protection"] = $is_admin || $lesson_meta['xvast_protection'][0] === 'no' ? false : true;
         $lesson["is_author"] = $is_author || $is_admin ? true : false;
         $lesson["is_offline_purchase"] = in_array($product_id, get_user_meta($user_id, 'galal_offline_ids', false));
@@ -160,7 +166,7 @@ function get_lesson_and_student_data_refactored($request)
         "vodafone_cash" => $lesson_meta['payment_method_vodafone_cash'][0] === "yes" ? true : false,
         "last_purchase_date" => $lesson_meta['last_purchase_date'][0],
         "pre" => $lesson_meta['prerequisite'][0] == '' || !$pre_hw_id || !$lesson_meta['prerequisite'][0] ? false : intval($lesson_meta['prerequisite'][0]),
-        "hw_raw_data" => get_user_assessment_result($user_id, get_post_meta($product_id, 'hw_id', true), 'hwgrade'),
+        // "hw_raw_data" => $raw_data,
         "is_purchased" => $is_purchased,
         "finished_prerequisites" => $finished_prerequisites
     );
@@ -248,35 +254,4 @@ function fetch_grades_by_quiz_and_student($quiz_id, $student_id)
     } else {
         return null;
     }
-}
-
-function get_user_assessment_result($uid, $assessment_id, $type,)
-{
-    $data = [];
-    $args = array(
-        'post_type' => $type,
-        'author' => $uid,
-        'meta_query' => array(
-            array(
-                'key' => $type === 'hwgrade' ? 'hw_id' : 'quiz_id',
-                'value' => $assessment_id,
-                'compare' => '='
-            )
-        ),
-        'posts_per_page' => -1
-    );
-    $query = new WP_Query($args);
-
-    if ($query->have_posts()) {
-        while ($query->have_posts()) {
-            $query->the_post();
-            $post_id = get_the_ID();
-            $data[] = get_post_meta($post_id, 'raw_data', true);
-        }
-    }
-    if (count($data) < 1) {
-        return null;
-    }
-
-    return $type === 'hwgrade' ? $data[0] : $data;
 }
