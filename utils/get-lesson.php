@@ -255,3 +255,8 @@ function fetch_grades_by_quiz_and_student($quiz_id, $student_id)
         return null;
     }
 }
+
+function get_student_assessment_result()
+{
+    return true;
+}
